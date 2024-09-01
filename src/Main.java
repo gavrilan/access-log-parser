@@ -1,6 +1,8 @@
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 
 public class Main {
@@ -16,8 +18,7 @@ public class Main {
             if (isDirectory) {
                 System.out.println("Это путь к папке");
                 continue;
-            }
-            else {
+            } else {
                 if (!fileExist) {
                     System.out.println("Указанный файл не существует");
                     continue;
@@ -30,23 +31,34 @@ public class Main {
                 FileReader fileReader = new FileReader(path);
                 BufferedReader reader = new BufferedReader(fileReader);
                 String line;
-                int min=-1;
-                int max=-1;
-                int cnt=0;
+                int cnt = 0;
+                List<LogEntry> logEntryList = new ArrayList<>();
+                LogEntry logEntry;
                 while ((line = reader.readLine()) != null) {
                     int length = line.length();
                     if (length > 1024) {
                         throw new AccessLogParserException("Есть строка длина которой больше 1024");
                     }
                     cnt++;
-                    if (min==-1) {min=length; max=length;}
-                    else {
-                        if (min>length) min=length;
-                        if (max<length) max=length;
+                    logEntry = new LogEntry();
+                    logEntry.parseStr(line);
+                    logEntryList.add(logEntry);
+                }
+                // Подсчет ботов
+                double botYaCount = 0;
+                double botGoCount = 0;
+                for (LogEntry le : logEntryList) {
+                    String botName = le.getBotName();
+                    if (botName != null) {
+                        if ("YandexBot".equals(botName)) {
+                            botYaCount++;
+                        } else if ("Googlebot".equals(botName)) {
+                            botGoCount++;
+                        }
                     }
                 }
-                if (min>=0) System.out.println("Количество строк: " + cnt + ", Минимальная длина строки: " + min + ", Максимальная длина строки: " + max);
-                else System.out.println("Количество строк: " + cnt);
+                System.out.println("YandexBot: " + botYaCount / cnt * 100 + " %");
+                System.out.println("Googlebot: " + botGoCount / cnt * 100 + " %");
             } catch (AccessLogParserException ex1) {
                 throw new AccessLogParserException(ex1.getMessage());
             } catch (Exception ex) {
