@@ -27,43 +27,36 @@ public class Main {
             System.out.println("Путь указан верно");
             count++;
             System.out.println("Это файл номер " + count);
+
+//            path = "/Users/deathstalker/Downloads/access.log";
+
             try {
                 FileReader fileReader = new FileReader(path);
                 BufferedReader reader = new BufferedReader(fileReader);
                 String line;
-                int cnt = 0;
-                List<LogEntry> logEntryList = new ArrayList<>();
+                Statistics statistics = new Statistics();
                 LogEntry logEntry;
                 while ((line = reader.readLine()) != null) {
                     int length = line.length();
                     if (length > 1024) {
                         throw new AccessLogParserException("Есть строка длина которой больше 1024");
                     }
-                    cnt++;
-                    logEntry = new LogEntry();
-                    logEntry.parseStr(line);
-                    logEntryList.add(logEntry);
+                    logEntry = new LogEntry(line);
+                    statistics.addEntry(logEntry);
                 }
-                // Подсчет ботов
-                double botYaCount = 0;
-                double botGoCount = 0;
-                for (LogEntry le : logEntryList) {
-                    String botName = le.getBotName();
-                    if (botName != null) {
-                        if ("YandexBot".equals(botName)) {
-                            botYaCount++;
-                        } else if ("Googlebot".equals(botName)) {
-                            botGoCount++;
-                        }
-                    }
-                }
-                System.out.println("YandexBot: " + botYaCount / cnt * 100 + " %");
-                System.out.println("Googlebot: " + botGoCount / cnt * 100 + " %");
+
+                System.out.println("total: " + statistics.getTotalTraffic());
+                System.out.println("minTime: " + statistics.getMinTime());
+                System.out.println("maxTime: " + statistics.getMaxTime());
+
+                System.out.println("TrafficRate: " + statistics.getTrafficRate());
+
             } catch (AccessLogParserException ex1) {
                 throw new AccessLogParserException(ex1.getMessage());
             } catch (Exception ex) {
                 ex.printStackTrace();
             }
+//            break;
         }
 
     }
