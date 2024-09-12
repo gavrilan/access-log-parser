@@ -1,16 +1,22 @@
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.HashSet;
 
 public class Statistics {
 
     private long totalTraffic;
     private LocalDateTime minTime;
     private LocalDateTime maxTime;
+    private HashSet<String> pageAddresses;
+    private HashMap<String, Integer> countOS;
 
     public Statistics() {
         totalTraffic = 0;
         minTime = null;
         maxTime = null;
+        pageAddresses = new HashSet<>();
+        countOS = new HashMap<>();
     }
 
     public void addEntry(LogEntry logEntry) {
@@ -29,6 +35,43 @@ public class Statistics {
                 maxTime = logEntry.getTime();
             }
         }
+        if (logEntry.getResponseCode() == 200) {
+            pageAddresses.add(logEntry.getPath());
+        }
+        if (logEntry.getUserAgent() != null) {
+            String osName = logEntry.getUserAgent().getOsName();
+            if (osName != null && !osName.isEmpty()) {
+                Integer cnt = countOS.get(osName);
+                if (cnt != null) {
+                    cnt++;
+                    countOS.put(osName, cnt);
+                } else {
+                    countOS.put(osName, 1);
+                }
+            }
+        }
+
+    }
+
+    public HashMap<String, Double> getOSPercent() {
+        HashMap<String, Double> res = new HashMap<>();
+        if (countOS.size() > 0) {
+            Double allCntOsName = 0.0;
+            for (HashMap.Entry<String, Integer> entry : countOS.entrySet()) {
+                allCntOsName += entry.getValue();
+            }
+            for (HashMap.Entry<String, Integer> entry : countOS.entrySet()) {
+                String osName = entry.getKey();
+                Integer osNameCnt = entry.getValue();
+                Double percent = osNameCnt / allCntOsName;
+                res.put(osName, percent);
+            }
+        }
+        return res;
+    }
+
+    public HashMap<String, Integer> getCountOS() {
+        return countOS;
     }
 
     public double getTrafficRate() {
@@ -51,5 +94,9 @@ public class Statistics {
 
     public LocalDateTime getMaxTime() {
         return maxTime;
+    }
+
+    public HashSet<String> getPageAddresses() {
+        return pageAddresses;
     }
 }

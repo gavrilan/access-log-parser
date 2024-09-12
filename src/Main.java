@@ -1,8 +1,6 @@
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Scanner;
 
 public class Main {
@@ -50,6 +48,9 @@ public class Main {
                 System.out.println("maxTime: " + statistics.getMaxTime());
 
                 System.out.println("TrafficRate: " + statistics.getTrafficRate());
+               // System.out.println("Pages: " + statistics.getPageAddresses());
+                System.out.println("OS count:" + statistics.getCountOS());
+                System.out.println("OS count percent:" + statistics.getOSPercent());
 
             } catch (AccessLogParserException ex1) {
                 throw new AccessLogParserException(ex1.getMessage());
