@@ -10,6 +10,9 @@ public class Statistics {
     private LocalDateTime maxTime;
     private HashSet<String> pageAddresses;
     private HashMap<String, Integer> countOS;
+    private HashSet<String> pageAddressesNotFound;
+    private HashMap<String, Integer> countBrowser;
+
 
     public Statistics() {
         totalTraffic = 0;
@@ -17,6 +20,16 @@ public class Statistics {
         maxTime = null;
         pageAddresses = new HashSet<>();
         countOS = new HashMap<>();
+        pageAddressesNotFound = new HashSet<>();
+        countBrowser = new HashMap<>();
+    }
+
+    public HashSet<String> getPageAddressesNotFound() {
+        return pageAddressesNotFound;
+    }
+
+    public HashMap<String, Integer> getCountBrowser() {
+        return countBrowser;
     }
 
     public void addEntry(LogEntry logEntry) {
@@ -38,6 +51,9 @@ public class Statistics {
         if (logEntry.getResponseCode() == 200) {
             pageAddresses.add(logEntry.getPath());
         }
+        if (logEntry.getResponseCode() == 404) {
+            pageAddressesNotFound.add(logEntry.getPath());
+        }
         if (logEntry.getUserAgent() != null) {
             String osName = logEntry.getUserAgent().getOsName();
             if (osName != null && !osName.isEmpty()) {
@@ -47,6 +63,19 @@ public class Statistics {
                     countOS.put(osName, cnt);
                 } else {
                     countOS.put(osName, 1);
+                }
+            }
+        }
+
+        if (logEntry.getUserAgent() != null) {
+            String browserName = logEntry.getUserAgent().getBrowserName();
+            if (browserName != null && !browserName.isEmpty()) {
+                Integer cnt = countBrowser.get(browserName);
+                if (cnt != null) {
+                    cnt++;
+                    countBrowser.put(browserName, cnt);
+                } else {
+                    countBrowser.put(browserName, 1);
                 }
             }
         }
@@ -65,6 +94,23 @@ public class Statistics {
                 Integer osNameCnt = entry.getValue();
                 Double percent = osNameCnt / allCntOsName;
                 res.put(osName, percent);
+            }
+        }
+        return res;
+    }
+
+    public HashMap<String, Double> getBrowserPercent() {
+        HashMap<String, Double> res = new HashMap<>();
+        if (countBrowser.size() > 0) {
+            Double allCntBrowserName = 0.0;
+            for (HashMap.Entry<String, Integer> entry : countBrowser.entrySet()) {
+                allCntBrowserName += entry.getValue();
+            }
+            for (HashMap.Entry<String, Integer> entry : countBrowser.entrySet()) {
+                String browserName = entry.getKey();
+                Integer browserNameCnt = entry.getValue();
+                Double percent = browserNameCnt / allCntBrowserName;
+                res.put(browserName, percent);
             }
         }
         return res;

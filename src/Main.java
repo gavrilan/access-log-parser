@@ -51,6 +51,9 @@ public class Main {
                // System.out.println("Pages: " + statistics.getPageAddresses());
                 System.out.println("OS count:" + statistics.getCountOS());
                 System.out.println("OS count percent:" + statistics.getOSPercent());
+                System.out.println("Pages: " + statistics.getPageAddressesNotFound());
+                System.out.println("Browser count:" + statistics.getCountBrowser());
+                System.out.println("Browser count percent:" + statistics.getBrowserPercent());
 
             } catch (AccessLogParserException ex1) {
                 throw new AccessLogParserException(ex1.getMessage());
