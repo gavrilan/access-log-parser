@@ -12,7 +12,9 @@ public class Statistics {
     private HashMap<String, Integer> countOS;
     private HashSet<String> pageAddressesNotFound;
     private HashMap<String, Integer> countBrowser;
-
+    private long userReqCnt;
+    private long reqErrorCnt;
+    private HashMap<String, Integer> uniqueUser;
 
     public Statistics() {
         totalTraffic = 0;
@@ -22,6 +24,9 @@ public class Statistics {
         countOS = new HashMap<>();
         pageAddressesNotFound = new HashSet<>();
         countBrowser = new HashMap<>();
+        userReqCnt = 0;
+        reqErrorCnt = 0;
+        uniqueUser = new HashMap<>();
     }
 
     public HashSet<String> getPageAddressesNotFound() {
@@ -80,6 +85,22 @@ public class Statistics {
             }
         }
 
+        if (logEntry.getUserAgent() != null) {
+            if (!logEntry.getUserAgent().isBot()) {
+                userReqCnt++;
+                Integer cnt = uniqueUser.get(logEntry.getIpAddr());
+                if (cnt != null) {
+                    cnt++;
+                    uniqueUser.put(logEntry.getIpAddr(), cnt);
+                } else {
+                    uniqueUser.put(logEntry.getIpAddr(), 1);
+                }
+            }
+        }
+
+        if ((logEntry.getResponseCode() >= 400) && (logEntry.getResponseCode() <= 599)){
+            reqErrorCnt++;
+        }
     }
 
     public HashMap<String, Double> getOSPercent() {
@@ -122,8 +143,7 @@ public class Statistics {
 
     public double getTrafficRate() {
         double result = 0;
-        Duration duration = Duration.between(minTime, maxTime);
-        long hours = duration.toHours();
+        long hours = getLogPeriod();
         if (hours > 0) {
             result = totalTraffic / hours;
         }
@@ -144,5 +164,42 @@ public class Statistics {
 
     public HashSet<String> getPageAddresses() {
         return pageAddresses;
+    }
+
+    public HashMap<String, Integer> getUniqueUser() {
+        return uniqueUser;
+    }
+
+    public long getLogPeriod() {
+        Duration duration = Duration.between(minTime, maxTime);
+        long hours = duration.toHours();
+        return hours;
+    }
+
+    public long getAvgRequestByHour() {
+        long result = 0;
+        long hours = getLogPeriod();
+        if (hours > 0) {
+            result = userReqCnt / hours;
+        }
+        return result;
+    }
+
+    public long getAvgRequestErrorByHour() {
+        long result = 0;
+        long hours = getLogPeriod();
+        if (hours > 0) {
+            result = reqErrorCnt / hours;
+        }
+        return result;
+    }
+
+    public long getAvgRequestByUser() {
+        long result = 0;
+        long userCount = uniqueUser.size();
+        if (userCount > 0) {
+            result = userReqCnt / userCount;
+        }
+        return result;
     }
 }

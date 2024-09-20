@@ -55,6 +55,12 @@ public class Main {
                 System.out.println("Browser count:" + statistics.getCountBrowser());
                 System.out.println("Browser count percent:" + statistics.getBrowserPercent());
 
+                System.out.println("AvgRequestByHour:" + statistics.getAvgRequestByHour());
+                System.out.println("AvgRequestErrorByHour:" + statistics.getAvgRequestErrorByHour());
+                System.out.println("AvgRequestByUser:" + statistics.getAvgRequestByUser());
+//                System.out.println("UniqueUserCnt:" + statistics.getUniqueUser().size());
+
+
             } catch (AccessLogParserException ex1) {
                 throw new AccessLogParserException(ex1.getMessage());
             } catch (Exception ex) {

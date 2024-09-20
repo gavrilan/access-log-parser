@@ -2,6 +2,7 @@ public class UserAgent {
 
     private final String osName;
     private final String browserName;
+    private final Boolean bot;
 
     public String getOsName() {
         return osName;
@@ -9,6 +10,10 @@ public class UserAgent {
 
     public String getBrowserName() {
         return browserName;
+    }
+
+    public Boolean isBot() {
+        return bot;
     }
 
     public UserAgent(String userAgentStr) {
@@ -34,19 +39,28 @@ public class UserAgent {
                         } else {
                             browserName = browserTail.substring(1, browserTail.indexOf(" "));
                         }
+                        if (browserName.contains("bot")) {
+                            bot = true;
+                        } else {
+                            bot = false;
+                        }
                     } else {
                         browserName = null;
+                        bot = false;
                     }
                 } else {
                     browserName = null;
+                    bot = false;
                 }
             } else {
                 osName = null;
                 browserName = null;
+                bot = false;
             }
         } else {
             osName = null;
             browserName = null;
+            bot = false;
         }
     }
 
