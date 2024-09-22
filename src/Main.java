@@ -58,8 +58,10 @@ public class Main {
                 System.out.println("AvgRequestByHour:" + statistics.getAvgRequestByHour());
                 System.out.println("AvgRequestErrorByHour:" + statistics.getAvgRequestErrorByHour());
                 System.out.println("AvgRequestByUser:" + statistics.getAvgRequestByUser());
-//                System.out.println("UniqueUserCnt:" + statistics.getUniqueUser().size());
 
+                System.out.println("MaxRequestPerSecond:" + statistics.getMaxRequestPerSecond());
+                System.out.println("RefererList:" + statistics.getRefererList());
+                System.out.println("UserMaxRequest:" + statistics.getUserMaxRequest());
 
             } catch (AccessLogParserException ex1) {
                 throw new AccessLogParserException(ex1.getMessage());

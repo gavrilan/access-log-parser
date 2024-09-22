@@ -1,7 +1,8 @@
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.*;
 
 public class Statistics {
 
@@ -15,6 +16,8 @@ public class Statistics {
     private long userReqCnt;
     private long reqErrorCnt;
     private HashMap<String, Integer> uniqueUser;
+    private HashSet<String> refererSet;
+    private HashMap<Long, Long> requestPerSecond;
 
     public Statistics() {
         totalTraffic = 0;
@@ -27,6 +30,8 @@ public class Statistics {
         userReqCnt = 0;
         reqErrorCnt = 0;
         uniqueUser = new HashMap<>();
+        requestPerSecond = new HashMap<>();
+        refererSet = new HashSet<>();
     }
 
     public HashSet<String> getPageAddressesNotFound() {
@@ -95,11 +100,34 @@ public class Statistics {
                 } else {
                     uniqueUser.put(logEntry.getIpAddr(), 1);
                 }
+                // Количество запросов в секунду
+                Long secCnt = getLogPeriodPerSecond(minTime, logEntry.getTime());
+                Long reqCnt = requestPerSecond.get(secCnt);
+                if (reqCnt != null) {
+                    reqCnt++;
+                    requestPerSecond.put(secCnt, reqCnt);
+                } else {
+                    requestPerSecond.put(secCnt, 1L);
+                }
             }
         }
 
-        if ((logEntry.getResponseCode() >= 400) && (logEntry.getResponseCode() <= 599)){
+        if ((logEntry.getResponseCode() >= 400) && (logEntry.getResponseCode() <= 599)) {
             reqErrorCnt++;
+        }
+        if ((logEntry.getReferer() != null) && (!logEntry.getReferer().isEmpty())) {
+            try {
+                URI uri = new URI(logEntry.getReferer());
+                String host = uri.getHost();
+                if (host != null) {
+                    String domain = host.startsWith("www.") ? host.substring(4) : host;
+                    if (!refererSet.contains(domain)) {
+                        refererSet.add(domain);
+                    }
+                }
+            } catch (URISyntaxException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -202,4 +230,37 @@ public class Statistics {
         }
         return result;
     }
+
+    public long getLogPeriodPerSecond(LocalDateTime t1, LocalDateTime t2) {
+        Duration duration = Duration.between(t1, t2);
+        long sec = duration.toSeconds();
+        return sec;
+    }
+
+    public long getMaxRequestPerSecond() {
+        long result = 0;
+        if (requestPerSecond.size() > 0) {
+            Map.Entry<Long, Long> secMax = requestPerSecond.entrySet().stream()
+                    .max(Comparator.comparing(entry -> entry.getValue()))
+                    .orElseThrow(NoSuchElementException::new);
+            result = secMax.getValue();
+        }
+        return result;
+    }
+
+    public Set<String> getRefererList() {
+        return refererSet;
+    }
+
+    public long getUserMaxRequest() {
+        long result = 0;
+        if (uniqueUser.size() > 0) {
+            Map.Entry<String, Integer> userMax = uniqueUser.entrySet().stream()
+                    .max(Comparator.comparing(entry -> entry.getValue()))
+                    .orElseThrow(NoSuchElementException::new);
+            result = userMax.getValue();
+        }
+        return result;
+    }
+
 }
